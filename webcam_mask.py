@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 
 flags = [i for i in dir(cv) if i.startswith('COLOR_')]
-print( flags )
+#print( flags )
 
 def findHSVColor(r,g,b):
     hsv_green = cv.cvtColor(np.uint8([[[r,g,b]]]),cv.COLOR_BGR2HSV)
@@ -27,6 +27,9 @@ if not cap.isOpened():
     print("Cannot open camera")
     exit()
     
+faceCascade = cv.CascadeClassifier("opencv\/data\/haarcascades\/haarcascade_frontalface_default.xml")
+handCascade = cv.CascadeClassifier("opencv\/data\/haarcascades\/palm.xml")
+    
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -36,26 +39,32 @@ while True:
         print("Can't receive frame (stream end?). Exiting ...")
         break
     
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    faces = faceCascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=10)
+    if len(faces)>0:
+        cv.rectangle(frame, (faces[0][0], faces[0][1]), (faces[0][0]+faces[0][2], faces[0][1]+faces[0][3]), (255, 0, 0), 2)
+
     # Convert BGR to HSV
     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-    
      # define range of blue color in HSV
     lower = findHSVColor(141, 85, 36)
     upper = findHSVColor(255, 219, 172)
-    
-    lower = np.array([110,50,50])
-    upper = np.array([130,255,255])
-    
     mask = cv.inRange(hsv, lower, upper)
     # Bitwise-AND mask and original image
     res = cv.bitwise_and(frame,frame, mask= mask)
     
+    # mirroring image
+    frame = cv.flip(frame,1)
     # Display the resulting frame
+    cv.imshow('face_frame', frame)
+    '''
+    cv.imshow('grigio', gray)
     cv.imshow('original', frame)
     cv.imshow('hsv', hsv)
     cv.imshow('mask', mask)
     cv.imshow('result', res)
     cv.imshow('colors',img)
+    '''
     
     # get current positions of four trackbars
     r = cv.getTrackbarPos('R','colors')

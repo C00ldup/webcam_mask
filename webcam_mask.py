@@ -28,9 +28,9 @@ if not cap.isOpened():
     exit()
     
 faceCascade = cv.CascadeClassifier("opencv\/data\/haarcascades\/haarcascade_frontalface_default.xml")
-handCascade = cv.CascadeClassifier("opencv\/data\/haarcascades\/palm.xml")
+eyeCascade = cv.CascadeClassifier('opencv\/data\/haarcascades\/haarcascade_eye.xml')
     
-while True:
+while cap.isOpened():
     # Capture frame-by-frame
     ret, frame = cap.read()
 
@@ -40,10 +40,17 @@ while True:
         break
     
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    faces = faceCascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=10)
-    if len(faces)>0:
-        cv.rectangle(frame, (faces[0][0], faces[0][1]), (faces[0][0]+faces[0][2], faces[0][1]+faces[0][3]), (255, 0, 0), 2)
-
+    faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=10)
+    #if len(faces)>0:
+    #    cv.rectangle(frame, (faces[0][0], faces[0][1]), (faces[0][0]+faces[0][2], faces[0][1]+faces[0][3]), (255, 0, 0), 2)
+    for (x,y, w, h) in faces:
+        cv.rectangle(frame, pt1 = (x,y),pt2 = (x+w, y+h), color = (255,0,0),thickness = 2)
+        roi_gray = gray[y:y+h,x:x+w]
+        roi_color = frame[y:y+h, x:x+w]
+        eyes = eyeCascade.detectMultiScale(roi_gray, scaleFactor=1.2, minNeighbors=10)
+        for (ex,ey, ew, eh) in eyes:
+            cv.rectangle(roi_color, (ex,ey), (ex+ew, ey+eh), (0,255,0), 2)
+            
     # Convert BGR to HSV
     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
      # define range of blue color in HSV
